@@ -6,11 +6,11 @@
     "require": {
         "php": ">=8.4",
         "componenta/config": "^1.0",
-        "componenta/cqrs": "^2.0@dev",
+        "componenta/cqrs": "^2.0",
         "cycle/database": "^2.15"
     },
     "require-dev": {
-        "componenta/di": "^2.0@dev",
+        "componenta/di": "^2.0",
         "pestphp/pest": "^4.0",
         "phpstan/phpstan": "^2.0"
     },
@@ -30,7 +30,7 @@
             "pestphp/pest-plugin": true
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true,
     "scripts": {
         "test": "@php vendor/bin/pest"
