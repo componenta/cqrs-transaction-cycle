@@ -6,7 +6,7 @@
     "require": {
         "php": ">=8.4",
         "componenta/config": "^1.0",
-        "componenta/cqrs": "^2.0",
+        "componenta/cqrs": "^1.0",
         "cycle/database": "^2.15"
     },
     "require-dev": {
