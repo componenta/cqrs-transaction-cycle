@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Componenta\CQRS\Command\Middleware;
 
+use Componenta\CQRS\Command\Exception\TransactionRollbackException;
+use Componenta\CQRS\Command\Exception\TransactionBoundaryException;
 use Componenta\CQRS\Command\OperationInterface;
 use Cycle\Database\DatabaseInterface;
 use Throwable;
@@ -42,15 +44,25 @@ final readonly class TransactionMiddleware implements MiddlewareInterface
      */
     public function execute(OperationInterface $operation, OperationHandlerInterface $handler): OperationInterface
     {
-        $this->database->begin();
+        if (!$this->database->begin()) {
+            throw TransactionBoundaryException::forPhase('begin');
+        }
 
         try {
             $operation = $handler->handle($operation);
-            $this->database->commit();
+            if (!$this->database->commit()) {
+                throw TransactionBoundaryException::forPhase('commit');
+            }
 
             return $operation;
         } catch (Throwable $e) {
-            $this->database->rollback();
+            try {
+                if (!$this->database->rollback()) {
+                    throw TransactionBoundaryException::forPhase('rollback');
+                }
+            } catch (Throwable $rollbackFailure) {
+                throw new TransactionRollbackException($e, $rollbackFailure);
+            }
 
             throw $e;
         }
