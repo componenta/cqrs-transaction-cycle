@@ -1,6 +1,6 @@
 # Componenta CQRS Transaction Cycle
 
-Cycle Database transaction middleware for `componenta/cqrs` v4 commands. `main` is the transaction v3 line.
+Cycle Database transaction middleware for `componenta/cqrs` commands. The current package supports CQRS 2.x, 3.x, and the current CQRS v4 line.
 
 ```bash
 composer require componenta/cqrs-transaction-cycle
@@ -8,20 +8,27 @@ composer require componenta/cqrs-transaction-cycle
 
 The package has no ConfigProvider. `TransactionMiddleware` is constructor-autowireable; register `Cycle\Database\DatabaseInterface` in your container and add `Componenta\CQRS\Command\Middleware\TransactionMiddleware` to `ConfigKey::COMMAND_MIDDLEWARES` where command transactions are required.
 
-With the official policy and retry middleware the execution order is:
+Middleware ordering is application configuration. With retry outside transaction:
 
 ```text
-PolicyMiddleware
-  RetryMiddleware
-    TransactionMiddleware
-      handler
+RetryMiddleware
+  TransactionMiddleware
+    handler
 ```
 
-`TransactionMiddleware` owns the hard invariant that policy runs before opening a database transaction. `RetryMiddleware` owns the complementary cross-package invariant that retry wraps transaction, so every retry attempt gets its own `begin -> rollback/commit` boundary. The same relation is intentionally declared in one place only.
+each retry attempt gets its own `begin -> rollback/commit` boundary. With transaction outside retry:
 
-Configuring `TransactionMiddleware -> RetryMiddleware` fails through retry's `MiddlewareOrder` constraint instead of allowing writes from a failed attempt to remain in a transaction later committed by a successful attempt.
+```text
+TransactionMiddleware
+  RetryMiddleware
+    handler
+```
 
-Example without retry:
+all retry attempts run inside one surrounding transaction. The package does not reject either topology; applications choose the transaction scope they need and should account for how failed attempts affect that scope.
+
+Policy placement is likewise application-defined. Putting policy outside transaction avoids opening a transaction for commands that authorization rejects; putting policy inside transaction deliberately includes authorization in the transaction boundary.
+
+Example:
 
 ```php
 use Componenta\CQRS\Command\Middleware\TransactionMiddleware;
