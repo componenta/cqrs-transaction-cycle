@@ -11,14 +11,13 @@ use Cycle\Database\DatabaseInterface;
 use Throwable;
 
 /**
- * Wraps one authorized command attempt in a database transaction.
+ * Wraps one authorized command execution in a database transaction.
  *
- * Policy must run before a transaction is opened. Retry, when present, wraps
- * this middleware so every retry attempt has its own transaction boundary.
+ * Policy must run before a transaction is opened. Retry middleware, when used,
+ * owns the complementary constraint requiring itself to wrap this middleware.
  */
 #[MiddlewareOrder(after: [
     'Componenta\\CQRS\\Command\\Middleware\\PolicyMiddleware',
-    'Componenta\\CQRS\\Command\\Middleware\\RetryMiddleware',
 ])]
 final readonly class TransactionMiddleware implements MiddlewareInterface
 {
