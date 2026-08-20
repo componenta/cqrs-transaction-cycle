@@ -8,7 +8,7 @@ composer require componenta/cqrs-transaction-cycle
 
 The package has no ConfigProvider. `TransactionMiddleware` is constructor-autowireable; register `Cycle\Database\DatabaseInterface` in your container and add `Componenta\CQRS\Command\Middleware\TransactionMiddleware` to `ConfigKey::COMMAND_MIDDLEWARES` where command transactions are required.
 
-CQRS v4 validates the transaction ordering contract before compiling the command pipeline. When the corresponding middleware are present, the order is:
+With the official policy and retry middleware the execution order is:
 
 ```text
 PolicyMiddleware
@@ -17,7 +17,9 @@ PolicyMiddleware
       handler
 ```
 
-Policy must run before a database transaction is opened. Retry must wrap transaction so every retry attempt gets its own `begin -> rollback/commit` boundary. Configuring `TransactionMiddleware -> RetryMiddleware` fails immediately instead of allowing writes from a failed attempt to remain in a transaction later committed by a successful attempt.
+`TransactionMiddleware` owns the hard invariant that policy runs before opening a database transaction. `RetryMiddleware` owns the complementary cross-package invariant that retry wraps transaction, so every retry attempt gets its own `begin -> rollback/commit` boundary. The same relation is intentionally declared in one place only.
+
+Configuring `TransactionMiddleware -> RetryMiddleware` fails through retry's `MiddlewareOrder` constraint instead of allowing writes from a failed attempt to remain in a transaction later committed by a successful attempt.
 
 Example without retry:
 
@@ -31,5 +33,3 @@ return [
     ],
 ];
 ```
-
-If policy or retry middleware are installed, the hard `MiddlewareOrder` contract ensures they appear before `TransactionMiddleware`.
