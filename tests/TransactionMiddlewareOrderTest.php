@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Componenta\CQRS\Command\Middleware\MiddlewareOrder;
 use Componenta\CQRS\Command\Middleware\TransactionMiddleware;
 
-it('declares transaction execution after policy and retry boundaries', function (): void {
+it('declares transaction execution after policy', function (): void {
     $attributes = (new ReflectionClass(TransactionMiddleware::class))
         ->getAttributes(MiddlewareOrder::class);
 
@@ -16,6 +16,5 @@ it('declares transaction execution after policy and retry boundaries', function 
 
     expect($order->after)->toBe([
         Componenta\CQRS\Command\Middleware\PolicyMiddleware::class,
-        Componenta\CQRS\Command\Middleware\RetryMiddleware::class,
     ])->and($order->before)->toBe([]);
 });
