@@ -11,19 +11,15 @@ use Cycle\Database\DatabaseInterface;
 use Throwable;
 
 /**
- * Wraps one command execution in a database transaction.
+ * Wraps one authorized command attempt in a database transaction.
  *
- * Automatically commits on success and rolls back on any exception.
- *
- * When RetryMiddleware is used, it must wrap this middleware so every retry
- * attempt has an independent transaction boundary:
- *
- * ```text
- * RetryMiddleware
- *   TransactionMiddleware
- *     handler
- * ```
+ * Policy must run before a transaction is opened. Retry, when present, wraps
+ * this middleware so every retry attempt has its own transaction boundary.
  */
+#[MiddlewareOrder(after: [
+    PolicyMiddleware::class,
+    RetryMiddleware::class,
+])]
 final readonly class TransactionMiddleware implements MiddlewareInterface
 {
     public function __construct(
