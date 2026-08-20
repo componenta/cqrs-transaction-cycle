@@ -5,7 +5,6 @@
     "license": "MIT",
     "require": {
         "php": ">=8.4",
-        "componenta/config": "^2.0.2",
         "componenta/cqrs": "^2.0 || ^3.0.3",
         "cycle/database": "^2.15"
     },
@@ -33,6 +32,7 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "scripts": {
-        "test": "@php vendor/bin/pest"
+        "test": "@php vendor/bin/pest",
+        "analyse": "@php vendor/bin/phpstan analyse src --level=max"
     }
 }
