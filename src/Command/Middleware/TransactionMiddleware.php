@@ -4,44 +4,34 @@ declare(strict_types=1);
 
 namespace Componenta\CQRS\Command\Middleware;
 
-use Componenta\CQRS\Command\Exception\TransactionRollbackException;
 use Componenta\CQRS\Command\Exception\TransactionBoundaryException;
+use Componenta\CQRS\Command\Exception\TransactionRollbackException;
 use Componenta\CQRS\Command\OperationInterface;
 use Cycle\Database\DatabaseInterface;
 use Throwable;
 
 /**
- * Wraps command execution in a database transaction.
+ * Wraps one command execution in a database transaction.
  *
  * Automatically commits on success and rolls back on any exception.
  *
- * Flow:
- * ```
- * begin()
- *   -> handler executes command
- *   -> success: commit()
- *   -> failure: rollback() -> rethrow exception
- * ```
+ * When RetryMiddleware is used, it must wrap this middleware so every retry
+ * attempt has an independent transaction boundary:
  *
- * @example
- * ```php
- * $bus = new CommandBus(
- *     new HandleCommandHandler($locator),
- *     new SequentialMiddleware(),
- *     new TransactionMiddleware($database),
- *     new EventMiddleware($listeners),
- * );
+ * ```text
+ * RetryMiddleware
+ *   TransactionMiddleware
+ *     handler
  * ```
  */
 final readonly class TransactionMiddleware implements MiddlewareInterface
 {
     public function __construct(
         private DatabaseInterface $database,
-    ) {}
+    ) {
+    }
 
-    /**
-     * @throws Throwable
-     */
+    /** @throws Throwable */
     public function execute(OperationInterface $operation, OperationHandlerInterface $handler): OperationInterface
     {
         if (!$this->database->begin()) {
@@ -50,6 +40,7 @@ final readonly class TransactionMiddleware implements MiddlewareInterface
 
         try {
             $operation = $handler->handle($operation);
+
             if (!$this->database->commit()) {
                 throw TransactionBoundaryException::forPhase('commit');
             }
