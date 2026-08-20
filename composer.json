@@ -5,11 +5,11 @@
     "license": "MIT",
     "require": {
         "php": ">=8.4",
-        "componenta/cqrs": "^2.0 || ^3.0.3 || ^4.0",
+        "componenta/cqrs": "^4.0",
         "cycle/database": "^2.15"
     },
     "require-dev": {
-        "componenta/di": "^2.0 || ^3.0 || ^4.0.2",
+        "componenta/di": "^4.0.2",
         "pestphp/pest": "^4.0",
         "phpstan/phpstan": "^2.0"
     },
@@ -31,6 +31,11 @@
     },
     "minimum-stability": "stable",
     "prefer-stable": true,
+    "extra": {
+        "branch-alias": {
+            "dev-main": "3.0.x-dev"
+        }
+    },
     "scripts": {
         "test": "@php vendor/bin/pest",
         "analyse": "@php vendor/bin/phpstan analyse src --level=max"
