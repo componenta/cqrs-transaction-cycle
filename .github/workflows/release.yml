@@ -74,7 +74,7 @@ jobs:
           set -euo pipefail
           first_line="${COMMIT_MESSAGE%%$'\n'*}"
           tag="${first_line#Release }"
-          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9A-Za-z.-]+$ ]]; then
+          if ! [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
             echo "Invalid release tag: $tag" >&2
             exit 1
           fi
